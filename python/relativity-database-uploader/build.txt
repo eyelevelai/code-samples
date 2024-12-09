@@ -1,0 +1,6 @@
+# for local environment
+
+virtualenv .env
+source .env/bin/activate
+
+python -m pip install -r requirements.txt

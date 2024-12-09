@@ -1,0 +1,2 @@
+uvicorn --host 0.0.0.0 --port 5009  app:app
+ngrok http 5009
