@@ -1,0 +1,1 @@
+This is the backend service which enables the core functionality of the application. The core AI workflow is blocked out in the .ipynb file, then was made into an importable python file which the flask app uses.
