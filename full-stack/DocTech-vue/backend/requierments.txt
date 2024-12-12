@@ -1,6 +1,6 @@
 langgraph
 langchain-openai
-groundx-python-sdk
+groundx>=2.1.0
 openai
 python-dotenv
 flask

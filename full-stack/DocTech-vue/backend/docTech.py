@@ -1,4 +1,4 @@
-from groundx import Groundx
+from groundx import GroundX
 from typing import TypedDict
 from langgraph.graph import StateGraph, START, END
 from langchain_openai import ChatOpenAI
@@ -9,15 +9,14 @@ import os
 load_dotenv()
 
 # Setting up API keys
-groundx = Groundx(
-    api_key=os.environ['GROUNDX_API_KEY']
-)
+groundx = GroundX(api_key=os.environ["GROUNDX_API_KEY"])
 
-#===============================================================================
+# ===============================================================================
 # Action Parsing
-#===============================================================================
+# ===============================================================================
 
-#action determiner
+
+# action determiner
 class Action(TypedDict):
     scroll_up: bool
     scroll_down: bool
@@ -27,6 +26,7 @@ class Action(TypedDict):
     find_fig: bool
     find_pdf: bool
     non_determ: bool
+
 
 action_parse_prompt = ChatPromptTemplate.from_messages(
     [
@@ -53,12 +53,14 @@ action_parser = action_parse_prompt | ChatOpenAI(
     model="gpt-4o", temperature=0
 ).with_structured_output(Action)
 
-#===============================================================================
+# ===============================================================================
 # Snap Page Parsing
-#===============================================================================
+# ===============================================================================
+
 
 class SnapPage(TypedDict):
     snap_page: int
+
 
 snap_page_parse_prompt = ChatPromptTemplate.from_messages(
     [
@@ -75,12 +77,14 @@ snap_page_parser = snap_page_parse_prompt | ChatOpenAI(
     model="gpt-4o", temperature=0
 ).with_structured_output(SnapPage)
 
-#===============================================================================
+# ===============================================================================
 # Figure Description Parsing
-#===============================================================================
+# ===============================================================================
+
 
 class FigDesc(TypedDict):
     figure_description: str
+
 
 fig_desc_parse_prompt = ChatPromptTemplate.from_messages(
     [
@@ -99,12 +103,14 @@ fig_desc_parser = fig_desc_parse_prompt | ChatOpenAI(
     model="gpt-4o", temperature=0
 ).with_structured_output(FigDesc)
 
-#===============================================================================
+# ===============================================================================
 # Document Description Parsing
-#===============================================================================
+# ===============================================================================
+
 
 class DocDesc(TypedDict):
     doc_description: str
+
 
 doc_desc_parse_prompt = ChatPromptTemplate.from_messages(
     [
@@ -123,77 +129,122 @@ doc_desc_parser = doc_desc_parse_prompt | ChatOpenAI(
     model="gpt-4o", temperature=0
 ).with_structured_output(DocDesc)
 
-#===============================================================================
+# ===============================================================================
 # Search for Figure
-#===============================================================================
+# ===============================================================================
 
 bucket_id = 11795
 
+
 def gx_search_figure(query):
 
-    response = groundx.search.content(
-        id=bucket_id,
-        query=query
+    response = groundx.search.content(id=bucket_id, query=query)
+
+    semantic_object = response.body["search"]["results"][0]
+    rag_context = response.body["search"]["text"]
+
+    return (
+        semantic_object["sourceUrl"],
+        semantic_object["boundingBoxes"][0]["pageNumber"],
+        rag_context,
     )
 
-    semantic_object = response.body['search']['results'][0]
-    rag_context = response.body['search']['text']
 
-    return semantic_object['sourceUrl'], semantic_object['boundingBoxes'][0]['pageNumber'], rag_context
-
-#===============================================================================
+# ===============================================================================
 # Search for Documents
-#===============================================================================
+# ===============================================================================
+
 
 def gx_search_document(query):
 
-    response = groundx.search.content(
-        id=bucket_id,
-        query=query
-    )
+    response = groundx.search.content(id=bucket_id, query=query)
 
-    semantic_object = response.body['search']['results'][0]
-    rag_context = response.body['search']['text']
+    semantic_object = response.body["search"]["results"][0]
+    rag_context = response.body["search"]["text"]
 
-    return semantic_object['sourceUrl'], rag_context
+    return semantic_object["sourceUrl"], rag_context
 
-#===============================================================================
+
+# ===============================================================================
 # Old Endpoint
-#===============================================================================
+# ===============================================================================
+
 
 def handle_query(query, context):
-    #getting action that should be performed
-    response = action_parser.invoke({"messages": [("ai", "my name is doc tech, what action would you like me to perform?"),("user", query)]})
-    response['pdf']= None
-    response['page']=None
+    # getting action that should be performed
+    response = action_parser.invoke(
+        {
+            "messages": [
+                (
+                    "ai",
+                    "my name is doc tech, what action would you like me to perform?",
+                ),
+                ("user", query),
+            ]
+        }
+    )
+    response["pdf"] = None
+    response["page"] = None
 
-    #doing follow up as necessary
-    if response['snap_page']:
-        response['page']=snap_page_parser.invoke({"messages": [("ai", f"my name is doc tech, what page would you like to snap to. Current state: {context}"),("user", query)]})
-    elif response['find_fig']:
-        response['pdf'], response['page'], _ = gx_search_figure(query)
-    elif response['find_pdf']:
-        response['pdf'], _ = gx_search_document(query)
+    # doing follow up as necessary
+    if response["snap_page"]:
+        response["page"] = snap_page_parser.invoke(
+            {
+                "messages": [
+                    (
+                        "ai",
+                        f"my name is doc tech, what page would you like to snap to. Current state: {context}",
+                    ),
+                    ("user", query),
+                ]
+            }
+        )
+    elif response["find_fig"]:
+        response["pdf"], response["page"], _ = gx_search_figure(query)
+    elif response["find_pdf"]:
+        response["pdf"], _ = gx_search_document(query)
 
     return response
 
-#===============================================================================
+
+# ===============================================================================
 # New Endpoints With Voice
-#===============================================================================
+# ===============================================================================
+
 
 def decide_and_respond(query, context):
-    #getting action that should be performed
-    response = action_parser.invoke({"messages": [("ai", "my name is doc tech, what action would you like me to perform?"),("user", query)]})
-    response['query']= query
-    response['context']=context
-    response['page']=None
-    response['does_follow_up']=False
+    # getting action that should be performed
+    response = action_parser.invoke(
+        {
+            "messages": [
+                (
+                    "ai",
+                    "my name is doc tech, what action would you like me to perform?",
+                ),
+                ("user", query),
+            ]
+        }
+    )
+    response["query"] = query
+    response["context"] = context
+    response["page"] = None
+    response["does_follow_up"] = False
 
-    #doing follow up as necessary
-    if response['snap_page']:
-        response['page']=snap_page_parser.invoke({"messages": [("ai", f"my name is doc tech, what page would you like to snap to. Current state: {context}"),("user", query)]})
+    # doing follow up as necessary
+    if response["snap_page"]:
+        response["page"] = snap_page_parser.invoke(
+            {
+                "messages": [
+                    (
+                        "ai",
+                        f"my name is doc tech, what page would you like to snap to. Current state: {context}",
+                    ),
+                    ("user", query),
+                ]
+            }
+        )
 
-    #Prompting the language model to come up with a response.
+    # Prompting the language model to come up with a response.
     class VerbalResponse(TypedDict):
         immediate_response: str
         followup_response: bool
@@ -222,44 +273,44 @@ def decide_and_respond(query, context):
         model="gpt-4o", temperature=0
     ).with_structured_output(VerbalResponse)
 
-    response_info = verb_resp_parser.invoke({"messages": [("user", query),("ai", str(response))]})
-    verbal_response = response_info['immediate_response']
-    response['does_follow_up'] = response_info['followup_response']
+    response_info = verb_resp_parser.invoke(
+        {"messages": [("user", query), ("ai", str(response))]}
+    )
+    verbal_response = response_info["immediate_response"]
+    response["does_follow_up"] = response_info["followup_response"]
 
-    print('verbal response:')
+    print("verbal response:")
     print(verbal_response)
 
-    print('Will Follow Up:')
-    print(response['does_follow_up'])
+    print("Will Follow Up:")
+    print(response["does_follow_up"])
 
-    #constructing audio
+    # constructing audio
     from openai import OpenAI
+
     client = OpenAI()
 
     speech_file_path = "speech.mp3"
-    r = client.audio.speech.create(
-    model="tts-1",
-    voice="alloy",
-    input=verbal_response
-    )
+    r = client.audio.speech.create(model="tts-1", voice="alloy", input=verbal_response)
     r.stream_to_file(speech_file_path)
 
-    #returning json object
+    # returning json object
     return response
 
-def handle_action(response): 
-    query = response['query']
-    response['pdf']= None
-    response['page']=None
 
-    #Finding figure or pdf if necessary
-    if response['find_fig']:
-        response['pdf'], response['page'], rag_context = gx_search_figure(query)
-    elif response['find_pdf']:
-        response['pdf'], rag_context = gx_search_document(query)
+def handle_action(response):
+    query = response["query"]
+    response["pdf"] = None
+    response["page"] = None
 
-    if response['does_follow_up']:
-        #Constructing a verbal response post RAG.
+    # Finding figure or pdf if necessary
+    if response["find_fig"]:
+        response["pdf"], response["page"], rag_context = gx_search_figure(query)
+    elif response["find_pdf"]:
+        response["pdf"], rag_context = gx_search_document(query)
+
+    if response["does_follow_up"]:
+        # Constructing a verbal response post RAG.
         class VerbalResponse(TypedDict):
             response: str
 
@@ -291,20 +342,21 @@ def handle_action(response):
         verb_resp_parser = verb_resp_parse_prompt | ChatOpenAI(
             model="gpt-4o", temperature=0
         ).with_structured_output(VerbalResponse)
-        verbal_response = verb_resp_parser.invoke({"messages": [("user", query)]})['response']
+        verbal_response = verb_resp_parser.invoke({"messages": [("user", query)]})[
+            "response"
+        ]
 
-        print('followup verbal response:')
+        print("followup verbal response:")
         print(verbal_response)
 
-        #constructing audio
+        # constructing audio
         from openai import OpenAI
+
         client = OpenAI()
 
         speech_file_path = "speech2.mp3"
         r = client.audio.speech.create(
-        model="tts-1",
-        voice="alloy",
-        input=verbal_response
+            model="tts-1", voice="alloy", input=verbal_response
         )
         r.stream_to_file(speech_file_path)
 

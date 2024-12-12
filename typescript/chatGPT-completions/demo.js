@@ -1,4 +1,4 @@
-import { Groundx } from "groundx-typescript-sdk";
+import { GroundXClient } from "groundx";;
 import OpenAI from 'openai';
 
 import dotenv from 'dotenv'; 
@@ -22,7 +22,7 @@ const instruction = "You are a helpful virtual assistant that answers questions 
 
 
 // Initialize the GroundX and OpenAI clients
-const groundx = new Groundx({
+const groundx = new GroundXClient({
     apiKey: process.env.GROUNDX_API_KEY,
 });
 

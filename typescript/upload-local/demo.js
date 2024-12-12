@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { Groundx } from "groundx-typescript-sdk";
+import { GroundXClient } from "groundx";;
 
 import dotenv from 'dotenv'; 
 dotenv.config();
@@ -11,11 +11,11 @@ if (!process.env.GROUNDX_API_KEY) {
 // set to skip lookup, otherwise will be set to first result
 let bucketId = 0;
 
-// enumerated file type (e.g. docx, pdf)
-// must be set to upload local or hosted
+// optional enumerated file type (e.g. docx, pdf)
+// if not set, file type will be inferred from file extension
 const fileType = "";
 
-// must be set to upload local
+// optional name for file
 const fileName = ""
 
 // set to local file path to upload local file
@@ -25,17 +25,9 @@ if (uploadLocal === "") {
   throw Error("set the local file path")
 }
 
-if (fileType === "") {
-  throw Error("set the file type to a supported enumerated type (e.g. txt, pdf)")
-}
-
-if (fileName === "") {
-  throw Error("set a name for the file")
-}
-
 
 // initialize client
-const groundx = new Groundx({
+const groundx = new GroundXClient({
   apiKey: process.env.GROUNDX_API_KEY,
 });
 
@@ -60,23 +52,23 @@ if (bucketId === 0) {
 
 
 // upload local documents to GroundX
-let ingest = await groundx.documents.uploadLocal([
-  {
-    blob: fs.readFileSync(uploadLocal),
-    metadata: {
+let ingest = await groundx.ingest(
+  [
+    {
       bucketId: bucketId,
       fileName: fileName,
+      filePath: uploadLocal,
       fileType: fileType,
       // optional metadata field
       // content is added to document chunks
       // fields are search during search requests
       // and returned in search results
-      metadata: {
+      searchData: {
         key: "value"
       }
     },
-  }
-]);
+  ]
+);
 
 if (!ingest || !ingest.status || ingest.status != 200 ||
   !ingest.data || !ingest.data.ingest) {

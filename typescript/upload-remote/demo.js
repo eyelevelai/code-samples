@@ -1,4 +1,4 @@
-import { Groundx } from "groundx-typescript-sdk";
+import { GroundXClient } from "groundx";
 
 import dotenv from 'dotenv'; 
 dotenv.config();
@@ -27,7 +27,7 @@ if (fileType === "") {
 
 
 // initialize client
-const groundx = new Groundx({
+const groundx = new GroundXClient({
   apiKey: process.env.GROUNDX_API_KEY,
 });
 
@@ -52,22 +52,22 @@ if (bucketId === 0) {
 
 
 // upload hosted documents to GroundX
-let ingest = await groundx.documents.uploadRemote({
-  documents: [
+let ingest = await groundx.ingest(
+  [
     {
       bucketId: bucketId,
+      filePath: uploadHosted,
       fileType: fileType,
       // optional metadata field
       // content is added to document chunks
       // fields are search during search requests
       // and returned in search results
-      metadata: {
+      searchData: {
         key: "value"
       },
-      sourceUrl: uploadHosted,
     }
   ]
-});
+);
 
 if (!ingest || !ingest.status || ingest.status != 200 ||
   !ingest.data || !ingest.data.ingest) {

@@ -1,9 +1,9 @@
-import { Groundx } from "groundx-typescript-sdk";
+import { GroundXClient } from "groundx";
 
 const bucketID = process.env.GROUNDX_BUCKET_ID as string;
 const apiKey = process.env.GROUNDX_API_KEY as string;
 
-export const groundx = new Groundx({
+export const groundx = new GroundXClient({
   apiKey: apiKey,
 });
 
