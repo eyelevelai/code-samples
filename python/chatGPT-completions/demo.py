@@ -1,7 +1,6 @@
 import os, sys
 
 from groundx import GroundX
-from groundx.exceptions_base import OpenApiException
 import openai
 
 from dotenv import load_dotenv
@@ -20,7 +19,7 @@ if os.getenv("GROUNDX_API_KEY") is None or os.getenv("OPENAI_API_KEY") is None:
 # GroundX Project ID or Bucket ID
 # Found in your GroundX account
 # OR by querying /project, /bucket
-groundxId = 0
+groundx_id = 0
 
 # Your question
 query = "YOUR QUERY HERE"
@@ -39,15 +38,15 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Do a GroundX search
 try:
-    content_response = client.search.content(id=groundxId, query=query)
+    content_response = client.search.content(id=groundx_id, query=query)
     results = content_response.search
-except ApiException as e:
+except Exception as e:
     print("Exception when calling SearchApi.content: %s\n" % e)
 
 # Access our suggested retrieved context
-llmText = results.text
+llm_text = results.text
 
-if llmText == "":
+if llm_text == "":
     raise Exception("\n\n\tYour search returned an empty result\n")
 
 # Do an OpenAI generation with the retrieved context
@@ -61,7 +60,7 @@ completion = openai.chat.completions.create(
 %s
 ===
 """
-            % (instruction, llmText),
+            % (instruction, llm_text),
         },
         {"role": "user", "content": query},
     ],

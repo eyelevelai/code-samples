@@ -12,13 +12,6 @@ const query = "YOUR QUERY";
 // set to skip lookup, otherwise will be set to first result
 let bucketId = 0;
 
-// enumerated file type (e.g. docx, pdf)
-// if not set, file type will be inferred from file extension
-const fileType = null;
-
-// optional name for file
-const fileName = null;
-
 // set to local file path or hosted URL to upload file
 const uploadPath = "";
 
@@ -43,21 +36,13 @@ if (bucketId === 0) {
 
 
 if (uploadPath !== "") {
-  const doc = {
-    bucketId: bucketId,
-    filePath: uploadPath,
-  };
-  if (fileName) {
-    doc.fileName = fileName;
-  }
-  if (fileType) {
-    doc.fileType = fileType;
-  }
-
   // upload documents to GroundX
   let ingest = await client.ingest(
     [
-      doc,
+      {
+        bucketId: bucketId,
+        filePath: uploadPath,
+      },
     ]
   );
 

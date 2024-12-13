@@ -20,25 +20,17 @@ query = "YOUR QUERY"
 
 # set to a value to skip a bucket lookup
 # otherwise this demo will use the first result from get all buckets
-bucketId = 0
-
-# enumerated file type (e.g. docx, pdf)
-# must be set to upload local or hosted
-# fileType = ""
-fileType = ""
-
-# must be set to upload local
-fileName = ""
+bucket_id = 0
 
 # set to local file path to upload local file or hosted url
-uploadPath = ""
+upload_path = ""
 
 # initialize client
 client = GroundX(
     api_key=os.getenv("GROUNDX_API_KEY"),
 )
 
-if bucketId == 0:
+if bucket_id == 0:
     # list buckets
     try:
         bucket_response = client.buckets.list()
@@ -47,21 +39,19 @@ if bucketId == 0:
             print(bucket_response.buckets)
             raise Exception("no results from buckets")
 
-        bucketId = bucket_response.buckets[0].bucket_id
+        bucket_id = bucket_response.buckets[0].bucket_id
     except OpenApiException as e:
         print("Exception when calling BucketApi.list: %s\n" % e)
 
 
-if uploadPath != "" and fileType != "" and fileName != "":
+if upload_path != "":
     # upload local documents to GroundX
     try:
         ingest = client.ingest(
             documents=[
                 Document(
-                bucket_id=bucketId,
-                file_name=fileName,
-                file_path=uploadPath,
-                file_type=fileType
+                    bucket_id=bucket_id,
+                    file_path=upload_path,
                 )
             ]
         )
@@ -81,7 +71,7 @@ if uploadPath != "" and fileType != "" and fileName != "":
 if query != "":
     # search
     try:
-        content_response = client.search.content(id=bucketId, query=query)
+        content_response = client.search.content(id=bucket_id, query=query)
 
         print(content_response.search.text)
     except OpenApiException as e:
