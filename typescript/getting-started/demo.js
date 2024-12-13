@@ -74,7 +74,7 @@ if (uploadPath !== "") {
         throw Error("GroundX ingest request failed");
     }
 
-    if (ingest.ingest.status === "complete" || ingest.ingest.status === "error") {
+    if (ingest.ingest.status === "complete" || ingest.ingest.status === "error" || ingest.ingest.status === "cancelled") {
         break;
     }
 
