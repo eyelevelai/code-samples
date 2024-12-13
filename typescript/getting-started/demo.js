@@ -1,5 +1,4 @@
-import fs from 'fs';
-import { Document, GroundXClient } from "groundx";;
+import { GroundXClient } from "groundx";;
 
 import dotenv from 'dotenv'; 
 dotenv.config();
@@ -24,27 +23,22 @@ const fileName = null;
 const uploadPath = "";
 
 // initialize client
-const groundx = new GroundXClient({
+const client = new GroundXClient({
   apiKey: process.env.GROUNDX_API_KEY,
 });
 
 
 if (bucketId === 0) {
   // list buckets
-  const bucketResponse = await groundx.buckets.list();
-  if (!bucketResponse || !bucketResponse.status || bucketResponse.status != 200 ||
-      !bucketResponse.data || !bucketResponse.data.buckets) {
-    console.error(bucketResponse);
-    throw Error("GroundX bucket request failed");
-  }
+  const bucketResponse = await client.buckets.list();
 
-  if (bucketResponse.data.buckets.count < 1) {
+  if (!bucketResponse?.buckets?.count) {
     console.error("no results from buckets");
-    console.log(bucketResponse.data.buckets);
+    console.log(bucketResponse?.buckets);
     throw Error("no results from GroundX bucket query");
   }
 
-  bucketId = bucketResponse.data.buckets[0].bucketId;
+  bucketId = bucketResponse.buckets[0].bucketId;
 }
 
 
@@ -61,51 +55,48 @@ if (uploadPath !== "") {
   }
 
   // upload documents to GroundX
-  let ingest = await groundx.ingest([
-    doc,
-  ]);
+  let ingest = await client.ingest(
+    [
+      doc,
+    ]
+  );
 
-  if (!ingest || !ingest.status || ingest.status != 200 ||
-    !ingest.data || !ingest.data.ingest) {
+  if (!ingest?.ingest?.processId) {
     console.error(ingest);
     throw Error("GroundX upload request failed");
   }
 
   // poll ingest status
-  while (ingest.data.ingest.status !== "complete" &&
-    ingest.data.ingest.status !== "error" &&
-    ingest.data.ingest.status !== "cancelled") {
-    ingest = await groundx.documents.getProcessingStatusById({
-      processId: ingest.data.ingest.processId,
-    });
-    if (!ingest || !ingest.status || ingest.status != 200 ||
-      !ingest.data || !ingest.data.ingest) {
-      console.error(ingest);
-      throw Error("GroundX upload request failed");
+  while (true) {
+    ingest = await client.documents.getProcessingStatusById(ingest.ingest.processId);
+    if (!ingest?.ingest?.status) {
+        console.error(ingest);
+        throw Error("GroundX ingest request failed");
     }
 
+    if (ingest.ingest.status === "complete" || ingest.ingest.status === "error") {
+        break;
+    }
+
+    console.log(ingest.ingest.status);
     await new Promise((resolve) => setTimeout(resolve, 3000));
   }
 }
 
 if (query !== "") {
   // search
-  const searchResponse = await groundx.search.content({
-    id: bucketId,
-    query: query
-  });
+  const searchResponse = await client.search.content(
+    bucketId,
+    {
+      query: query
+    }
+  );
 
-  if (!searchResponse || !searchResponse.status || searchResponse.status != 200 ||
-    !searchResponse.data || !searchResponse.data.search) {
-    console.error(searchResponse);
-    throw Error("GroundX search request failed");
-  }
-
-  if (!searchResponse.data.search.text) {
+  if (!searchResponse?.search?.text) {
     console.error("no results from search");
-    console.log(searchResponse.data.search);
+    console.log(searchResponse?.search);
     throw Error("no results from GroundX search query");
   }
 
-  console.log(searchResponse.data.search.text);
+  console.log(searchResponse.search.text);
 }
