@@ -1,6 +1,7 @@
 import os, sys
 
-from groundx import Groundx, ApiException
+from groundx import GroundX
+from groundx.exceptions_base import OpenApiException
 import openai
 
 from dotenv import load_dotenv
@@ -29,7 +30,7 @@ query = "YOUR QUERY HERE"
 instruction = "You are a helpful virtual assistant that answers questions using the content below. Your task is to create detailed answers to the questions by combining your understanding of the world with the content provided below. Do not share links."
 
 # Initialize the GroundX and OpenAI clients
-groundx = Groundx(
+client = GroundX(
     api_key=os.getenv("GROUNDX_API_KEY"),
 )
 
@@ -38,13 +39,13 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Do a GroundX search
 try:
-    content_response = groundx.search.content(id=groundxId, query=query)
-    results = content_response.body["search"]
+    content_response = client.search.content(id=groundxId, query=query)
+    results = content_response.search
 except ApiException as e:
     print("Exception when calling SearchApi.content: %s\n" % e)
 
 # Access our suggested retrieved context
-llmText = results["text"]
+llmText = results.text
 
 if llmText == "":
     raise Exception("\n\n\tYour search returned an empty result\n")
