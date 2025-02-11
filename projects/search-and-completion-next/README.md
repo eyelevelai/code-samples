@@ -23,26 +23,26 @@ Before you begin, ensure you have met the following requirements:
 
 ## Getting Started
 
+### Running On Prem
+
+This project can be configured to interact with your on prem GroundX deployment by setting the `GROUNDX_BASE_URL` to your GroundX service URL.
+
+If you'd like to user your own hosted LLM, you can set the `LLM_BASE_URL` to your hosted LLM endpoint. Your LLM must be compatible with the OpenAI chat API interface: https://platform.openai.com/docs/api-reference/chat
+
+If you set `LLM_API_KEY`, the value will be added to the `Authorization: Bearer $LLM_API_KEY` header with every request.
+
 ### Setting up API Keys
 
 This example assumes you have an API key set up for both OpenAI and GroundX. You can find your [OpenAI API keys here](https://platform.openai.com/account/api-keys) and your [GroundX API keys here](https://dashboard.groundx.ai/apikey)
 
-They can be configured as an environment variable as follows:
-```bash
-% export OPEN_AI_API_KEY=************
-% export GROUNDX_API_KEY=************
-```
+Copy `.env.sample` to `.env` and add your API keys.
 
 ### Setting up a GroundX Bucket
 GroundX is designed to allow language models to understand the content of complex human-centric documents. In order for this demo to work, you must have a GroundX "Content Bucket" with files uploaded.
 
-Navigate to the [GroundX content page](https://dashboard.groundx.ai/content), create a new bucket, and upload your content to that bucket. Your bucket will automatically have an `ID` assigned to it. Saving that as an environment variable will allow this demo to access the content of that bucket.
+Navigate to the [GroundX content page](https://dashboard.groundx.ai/content), create a new bucket, and upload your content to that bucket. Your bucket will automatically have an `ID` assigned to it. Saving that as the `GROUNDX_BUCKET_ID` environment variable will allow this demo to access the content of that bucket.
 
-```bash
-% export GROUNDX_BUCKET_ID=************
-```
-
-### Install dependency
+### Install dependencies
 
 ```bash
 npm install
@@ -58,7 +58,7 @@ npm run dev
 yarn run dev
 ```
 
-This will create a local server on [http://localhost:3000](http://localhost:3000) which is accessible via a post request to the `/search` endpoint.
+This will create a local server on [http://localhost:3000](http://localhost:3000).
 
 # Core Components
 

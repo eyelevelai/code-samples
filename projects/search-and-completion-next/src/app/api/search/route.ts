@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
-import { chatCompletions } from "@/app/services/openai";
+import { chatCompletions } from "@/app/services/llm";
 import { groundxSearchContent } from "@/app/services/groundx";
 
 const CorsHeaders = {
