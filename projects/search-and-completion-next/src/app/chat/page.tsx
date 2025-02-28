@@ -42,18 +42,27 @@ export const Chat: FC = () => {
       body: JSON.stringify({ query: question }),
     });
 
-    const reader = response.body?.getReader();
-    const decoder = new TextDecoder();
-    let serverAnswer = "";
-    setIsStreaming(true);
+    const llmBaseUrl = process.env.LLM_BASE_URL || "";
 
-    if (reader) {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        serverAnswer += decoder.decode(value, { stream: true });
-        // Add the streaming text to the UI in real-time
-        setMessages([...newMessages, { text: serverAnswer, type: "server" }]);
+    if (llmBaseUrl) {
+      const responseData = await response.json();
+      const serverAnswer = responseData.choices?.[0]?.message?.content || "No response";
+
+      setMessages([...newMessages, { text: serverAnswer, type: "server" }]);
+    } else {
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let serverAnswer = "";
+      setIsStreaming(true);
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          serverAnswer += decoder.decode(value, { stream: true });
+          // Add the streaming text to the UI in real-time
+          setMessages([...newMessages, { text: serverAnswer, type: "server" }]);
+        }
       }
     }
 

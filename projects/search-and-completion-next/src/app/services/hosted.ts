@@ -26,21 +26,33 @@ export async function chatCompletions(
   systemContext: string,
   options: ChatCompletionOptions = {}
 ) {
-  const messages: ChatCompletionMessageParam[] = [
-    {
-      role: "system",
-      content: `You are a helpful virtual assistant that answers questions using the content below.
-                Your task is to create detailed answers to the questions by combining
-                your understanding of the world with the content provided below. Do not share links.
-                ===
-                Context: ${systemContext}
-                ===`,
-    },
-    {
-      role: "user",
-      content: query,
-    },
-  ];
+  const messages: ChatCompletionMessageParam[] = systemContext.trim()
+    ? [
+        {
+          role: "system",
+          content: `You are a helpful virtual assistant that answers questions using the content below.
+                    Your task is to create detailed answers to the questions by combining
+                    your understanding of the world with the content provided below. Do not share links.
+                    ===
+                    Context: ${systemContext}
+                    ===`,
+        },
+        {
+          role: "user",
+          content: query,
+        },
+      ]
+    : [
+        {
+          role: "system",
+          content: `You are a helpful virtual assistant. Answer questions based on your general knowledge.
+                    Be as accurate and detailed as possible, and do not share links.`,
+        },
+        {
+          role: "user",
+          content: query,
+        },
+      ];
 
   const requestBody: ChatCompletionCreateParamsBase = {
     model: options.model ?? "gpt-4o",

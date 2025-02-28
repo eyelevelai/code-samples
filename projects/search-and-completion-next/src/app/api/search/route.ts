@@ -14,23 +14,34 @@ export async function POST(req: NextRequest) {
     const { query } = await req.json();
 
     const searchContent = await groundxSearchContent(query);
-    const stream = await chatCompletions(query, searchContent);
+    const res = await chatCompletions(query, searchContent);
 
-    const readableStream = new ReadableStream({
-      async start(controller) {
-        for await (const chunk of stream) {
-          controller.enqueue(new TextEncoder().encode(chunk.choices[0]?.delta?.content || ""));
-        }
-        controller.close();
-      },
-    });
+    const llmBaseUrl = process.env.LLM_BASE_URL || "";
 
-    return new Response(readableStream, {
-      headers: {
-        ...CorsHeaders,
-        "Content-Type": "text/plain; charset=utf-8",
-      },
-    });
+    if (llmBaseUrl) {
+      return new Response(res, {
+        headers: {
+          ...CorsHeaders,
+          "Content-Type": "text/plain; charset=utf-8",
+        },
+      });
+    } else {
+      const readableStream = new ReadableStream({
+        async start(controller) {
+          for await (const chunk of res) {
+            controller.enqueue(new TextEncoder().encode(chunk.choices[0]?.delta?.content || ""));
+          }
+          controller.close();
+        },
+      });
+
+      return new Response(readableStream, {
+        headers: {
+          ...CorsHeaders,
+          "Content-Type": "text/plain; charset=utf-8",
+        },
+      });
+    }
   } catch (err: any) {
     console.log(err, "message");
     return NextResponse.json({ error: err.message });

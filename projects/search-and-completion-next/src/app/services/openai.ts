@@ -21,7 +21,7 @@ const openAIStreamConfig = {
 export const chatCompletions = async (query: string, systemContext: string) => {
   const stream = (await openai.chat.completions.create({
     ...openAIStreamConfig,
-    messages: [
+    messages: systemContext.trim() ? [
       {
         role: "system",
         content: `You are a helpful virtual assistant that answers questions using the content below.
@@ -30,6 +30,13 @@ export const chatCompletions = async (query: string, systemContext: string) => {
                       ===
                       Context: ${systemContext} 
                       ===`,
+      },
+      { role: "user", content: query },
+    ] : [
+      {
+        role: "system",
+        content: `You are a helpful virtual assistant. Answer questions based on your general knowledge.
+        Be as accurate and detailed as possible, and do not share links.`,
       },
       { role: "user", content: query },
     ],
