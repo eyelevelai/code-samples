@@ -1,0 +1,3 @@
+query,expected_response,context_file,problem_type,context_modality
+"on my tax max page 46, what is choice ""A""?","Existing treatment under Charitable Hospital
+- Subsection 44(6) of the Act",my-tax-max-2023-corporate-and-other-taxes.pdf,Textual Information Extraction,Natural Rich PDF

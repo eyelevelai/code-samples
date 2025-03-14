@@ -1,0 +1,4 @@
+groundx
+openai
+pandas
+python-dotenv
