@@ -2,6 +2,8 @@
 
 This is an accuracy test based on the [MPMQA dataset](https://arxiv.org/abs/2304.09660).
 
+**Note**: you will need a subscription to upload the files in this test. The file sizes exceed the limits of a free trial account.
+
 ## Data Set
 
 The data for this test includes:
