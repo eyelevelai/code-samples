@@ -1,5 +1,7 @@
 import os, time
 
+from dotenv import load_dotenv
+
 from groundx import Document, GroundX
 from openai import OpenAI
 import pandas as pd
@@ -11,8 +13,9 @@ gx = None
 oai = None
 system_prompt = "you are a helpful AI agent tasked with answering questions with the content provided to you"
 
-
-from rag_battle_2 import rag_battle_2_files
+load_dotenv(
+    override=True,
+)
 
 
 def init():
@@ -124,18 +127,17 @@ def rag(query, model_name, indexes):
     return res
 
 
-def upload(files=rag_battle_2_files, batch_size=20):
+def upload(bucket_id, files, batch_size, total):
     global gx
 
     init()
 
-    gx = GroundX(
-        api_key=os.getenv("GROUNDX_API_KEY"),
-    )
-
     total_files = len(files)
+    if total > 0 and total < total_files:
+        files = files[:total]
+        total_files = total
 
-    print("scheduling files for upload...")
+    print(f"\nscheduling files for upload...")
 
     for i in range(0, total_files, batch_size):
         batch = files[i : i + batch_size]
@@ -144,14 +146,19 @@ def upload(files=rag_battle_2_files, batch_size=20):
         for file in batch:
             docs.append(
                 Document(
-                    bucket_id=os.getenv("GROUNDX_BUCKET_ID"),
+                    bucket_id=bucket_id,
                     file_path=file,
                 ),
             )
 
         ingest = None
         if len(docs) > 0:
-            print(f"uploading [{len(docs)}] files")
+            remain = total_files - (i+batch_size)
+            if remain < 0:
+                remain = 0
+            print(
+                f"\nuploading [{len(docs)}] files, [{remain}] remaining"
+            )
             try:
                 ingest = gx.ingest(
                     documents=docs,
@@ -159,7 +166,9 @@ def upload(files=rag_battle_2_files, batch_size=20):
             except Exception as e:
                 print("ingest error")
                 raise e
+            print("\nsuccess, polling for status...")
 
+        print("\nqueued", end="", flush=True)
         while (
             ingest is not None
             and ingest.ingest.status != "complete"
@@ -170,16 +179,26 @@ def upload(files=rag_battle_2_files, batch_size=20):
             ingest = gx.documents.get_processing_status_by_id(
                 process_id=ingest.ingest.process_id
             )
-            print(ingest.ingest.status)
+            print(f", {ingest.ingest.status}", end="", flush=True)
+            if ingest.ingest.status_message:
+                print()
+                print(ingest.ingest.status_message)
+
+        if ingest.ingest.status == "error" or ingest.ingest.status == "cancelled":
+            print()
+            print("stopping upload process")
+            raise ingest.status.status
+
+        print()
 
 
-def run(model_name, indexes, questions):
+def run(model_name, index, questions):
     init()
 
     completed = []
     for i, row in questions.iterrows():
         row = dict(row)
-        res = rag(row["query"], model_name, indexes)
+        res = rag(row["query"], model_name, index)
 
         for res_inst in res:
             this_row = {**row, **res_inst}

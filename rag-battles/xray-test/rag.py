@@ -1,4 +1,4 @@
-import argparse, multiprocessing, os, sys
+import argparse, os, sys
 
 from dotenv import load_dotenv
 import pandas as pd
@@ -73,7 +73,7 @@ def doGroundX(id, questions):
 
     from gx.rag import run as gxrun
 
-    gx_experiment = f"GroundX_DO_{id}"
+    gx_experiment = f"GroundX_test_{id}"
 
     results = gxrun(model_name, id, questions)
     results.to_csv(f"{results_path}/{gx_experiment}_{model_name}.csv", index=False)

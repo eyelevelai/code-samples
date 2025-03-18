@@ -1,4 +1,4 @@
-xray_files_1 = [
+xray_files = [
     "https://cdn.eyelevel.ai/cached/xray-test-files/questions/investment-4.pdf",
     "https://cdn.eyelevel.ai/cached/xray-test-files/questions/Crosby%2BJOS%2BDims.pdf",
     "https://cdn.eyelevel.ai/cached/xray-test-files/questions/21408174_422925104_1997097_1.pdf",
@@ -10,9 +10,6 @@ xray_files_1 = [
     "https://cdn.eyelevel.ai/cached/xray-test-files/questions/Benefit%2BIllustration%2BNew%2BTech%2BTerm.pdf",
     "https://cdn.eyelevel.ai/cached/xray-test-files/questions/BCBS%2BSchedule%2BA%2B%2528Version%2B1%2529.pdf",
     "https://cdn.eyelevel.ai/cached/xray-test-files/questions/rag-test.jpg",
-]
-
-xray_files = [
     "https://cdn.eyelevel.ai/cached/xray-test-files/questions/Dickinson_Sample_Slides_pdf%2B%2528dragged%2529%2B3.pdf",
     "https://cdn.eyelevel.ai/cached/xray-test-files/questions/HR%2B-%2BRequest%2BSystem%2BRegulation%2BOCT23_improved_version_removed.pdf",
     "https://cdn.eyelevel.ai/cached/xray-test-files/questions/001_7.png",

@@ -1,4 +1,4 @@
-groundx
+groundx>=2.2.3
 openai
 pandas
 python-dotenv

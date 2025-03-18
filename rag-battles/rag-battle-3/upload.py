@@ -97,4 +97,5 @@ if __name__ == "__main__":
     print(
         f"\nuploading [{len(files)}] files for partition [{args.p}] to bucket ID [{args.b}]"
     )
+
     upload(args.b, files, n, t)
