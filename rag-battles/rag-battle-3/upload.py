@@ -34,7 +34,7 @@ def parse_args():
         "-p",
         type=int,
         required=True,
-        help="The partition ID files to upload. Must be one of: [1, 2, or 3],",
+        help="The partition ID files to upload. Must be one of: [0, 1, 2, or 3],",
     )
     parser.add_argument(
         "-b",
@@ -59,7 +59,7 @@ def parse_args():
 
     try:
         args = parser.parse_args()
-        if args.p != 1 and args.p != 2 and args.p != 3:
+        if args.p != 0 and args.p != 1 and args.p != 2 and args.p != 3:
             print("\n\nYou used an invalid partition ID.")
             parser.error("")
         return args
@@ -81,7 +81,11 @@ if __name__ == "__main__":
     if args.t > 0:
         t = args.t
 
-    if args.p == 1:
+    if args.p == 0:
+        from partition_0 import rag_battle_2_files
+
+        files = rag_battle_2_files
+    elif args.p == 1:
         from partition_1 import rag_battle_3_p1_files
 
         files = rag_battle_3_p1_files
