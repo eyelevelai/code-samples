@@ -70,6 +70,16 @@ def init():
         oai = OpenAI()
 
 
+def create_bucket(name):
+    global gx
+
+    init()
+
+    res = gx.buckets.create(name=name)
+
+    print(f"\n\tcreated bucket [{name}], bucket ID [{res.bucket.bucket_id}]\n")
+
+
 def rag(query, model_name, index):
     global gx, oai, system_prompt
 

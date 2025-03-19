@@ -29,6 +29,16 @@ def init():
         oai = OpenAI()
 
 
+def create_bucket(name):
+    global gx
+
+    init()
+
+    res = gx.buckets.create(name=name)
+
+    print(f"\n\tcreated bucket [{name}], bucket ID [{res.bucket.bucket_id}]\n")
+
+
 def rag(query, model_name, index):
     global gx, oai, system_prompt
 
@@ -147,12 +157,10 @@ def upload(bucket_id, files, batch_size, total):
 
         ingest = None
         if len(docs) > 0:
-            remain = total_files - (i+batch_size)
+            remain = total_files - (i + batch_size)
             if remain < 0:
                 remain = 0
-            print(
-                f"\nuploading [{len(docs)}] files, [{remain}] remaining"
-            )
+            print(f"\nuploading [{len(docs)}] files, [{remain}] remaining")
             try:
                 ingest = gx.ingest(
                     documents=docs,
