@@ -40,101 +40,94 @@ def create_bucket(name):
     print(f"\n\tcreated bucket [{name}], bucket ID [{res.bucket.bucket_id}]\n")
 
 
-def rag(query, model_name, indexes):
+def rag(query, model_name, index):
     global gx, oai, system_prompt
 
     res = []
 
     print(f"\n\n{query}\n")
 
-    for i, pid in enumerate(indexes):
-        print(f"querying partition {i}, {pid}")
+    print(f"querying {index}")
 
-        result = None
-        retrievals = None
-        source = None
-        sourceCount = None
+    result = None
+    retrievals = None
+    source = None
+    sourceCount = None
 
-        tasktime = time.time()
-        for _ in range(3):
-            reqtime = time.time()
-            try:
-                retrievals = gx.search.content(id=pid, query=query)
-                break
-            except Exception as e:
-                print(f"gx error, trying again [{time.time() - reqtime:.4f}]")
-                print(e)
-                print(type(e))
-                time.sleep(5)
-        print(f"gx done [{time.time() - tasktime:.4f}]")
+    tasktime = time.time()
+    for _ in range(3):
+        reqtime = time.time()
+        try:
+            retrievals = gx.search.content(id=index, query=query)
+            break
+        except Exception as e:
+            print(f"gx error, trying again [{time.time() - reqtime:.4f}]")
+            print(e)
+            print(type(e))
+            time.sleep(5)
+    print(f"gx done [{time.time() - tasktime:.4f}]")
 
-        if sourceCount == 0:
-            # composing response fields
-            d = {}
-            d["approach"] = "RAG"
-            d["response"] = ""
-            d["source"] = source
-            d["retrieval_count"] = sourceCount
-            d["partition_name"] = f"partition_{i}"
-            d["partition_id"] = pid
-            res.append(d)
-            continue
+    source = str(retrievals.search.text)
+    sourceCount = len(retrievals.search.results)
 
-        source = str(retrievals.search.text)
-        sourceCount = len(retrievals.search.results)
+    if source == "":
+        return {
+            "approach": "RAG",
+            "response": "",
+            "source": source,
+            "retrieval_count": sourceCount,
+            "partition_name": f"bucket_{index}",
+            "partition_id": index,
+        }
 
-        messages = [
-            {
-                "role": "system",
-                "content": system_prompt,
-            },
-            {
-                "role": "user",
-                "content": f"content:\n{source}\n\nanswer the following question using the content above: {query}",
-            },
-        ]
+    messages = [
+        {
+            "role": "system",
+            "content": system_prompt,
+        },
+        {
+            "role": "user",
+            "content": f"content:\n{source}\n\nanswer the following question using the content above: {query}",
+        },
+    ]
 
-        tasktime = time.time()
-        for _ in range(3):
-            reqtime = time.time()
-            try:
-                result = (
-                    oai.chat.completions.create(
-                        model=model_name,
-                        messages=messages,
-                        temperature=1.0,
-                        top_p=0.7,
-                    )
-                    .choices[0]
-                    .message.content
+    tasktime = time.time()
+    for _ in range(3):
+        reqtime = time.time()
+        try:
+            result = (
+                oai.chat.completions.create(
+                    model=model_name,
+                    messages=messages,
+                    temperature=1.0,
+                    top_p=0.7,
                 )
-                if result is not None:
-                    print(f"{str(result)}")
-                    break
-                else:
-                    print(
-                        f"openAI result is none, trying again [{time.time() - reqtime:.4f}]"
-                    )
-                    time.sleep(5)
-            except Exception as e:
-                print(f"error, trying again [{time.time() - reqtime:.4f}]")
-                print(e)
-                print(type(e))
+                .choices[0]
+                .message.content
+            )
+            if result is not None:
+                print(f"{str(result)}")
+                break
+            else:
+                print(
+                    f"openAI result is none, trying again [{time.time() - reqtime:.4f}]"
+                )
                 time.sleep(5)
-        print(f"openAI done [{time.time() - tasktime:.4f}]")
+        except Exception as e:
+            print(f"error, trying again [{time.time() - reqtime:.4f}]")
+            print(e)
+            print(type(e))
+            time.sleep(5)
+    print(f"openAI done [{time.time() - tasktime:.4f}]")
 
-        # composing response fields
-        d = {}
-        d["approach"] = "RAG"
-        d["response"] = str(result)
-        d["source"] = source
-        d["retrieval_count"] = sourceCount
-        d["partition_name"] = f"partition_{i}"
-        d["partition_id"] = pid
-
-        res.append(d)
-
-    return res
+    return {
+        "approach": "RAG",
+        "response": str(result),
+        "source": source,
+        "retrieval_count": sourceCount,
+        "partition_name": f"bucket_{index}",
+        "partition_id": index,
+    }
 
 
 def upload(bucket_id, files, batch_size, total):

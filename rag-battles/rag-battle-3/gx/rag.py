@@ -105,20 +105,18 @@ def rag(query, model_name, index):
             time.sleep(5)
     print(f"gx done [{time.time() - tasktime:.4f}]")
 
-    if sourceCount == 0:
-        # composing response fields
-        d = {}
-        d["approach"] = "RAG"
-        d["response"] = ""
-        d["source"] = source
-        d["retrieval_count"] = sourceCount
-        d["partition_name"] = f"bucket_{index}"
-        d["partition_id"] = index
-
-        return d
-
     source = str(retrievals.search.text)
     sourceCount = len(retrievals.search.results)
+
+    if source == "":
+        return {
+            "approach": "RAG",
+            "response": "",
+            "source": source,
+            "retrieval_count": sourceCount,
+            "partition_name": f"bucket_{index}",
+            "partition_id": index,
+        }
 
     messages = [
         {
@@ -160,16 +158,14 @@ def rag(query, model_name, index):
             time.sleep(5)
     print(f"openAI done [{time.time() - tasktime:.4f}]")
 
-    # composing response fields
-    d = {}
-    d["approach"] = "RAG"
-    d["response"] = str(result)
-    d["source"] = source
-    d["retrieval_count"] = sourceCount
-    d["partition_name"] = f"bucket_{index}"
-    d["partition_id"] = index
-
-    return d
+    return {
+        "approach": "RAG",
+        "response": str(result),
+        "source": source,
+        "retrieval_count": sourceCount,
+        "partition_name": f"bucket_{index}",
+        "partition_id": index,
+    }
 
 
 def upload(bucket_id, files, batch_size, total, process_level="none"):
