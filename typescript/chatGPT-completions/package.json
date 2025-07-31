@@ -1,16 +1,17 @@
 {
   "name": "chatgpt-completions",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "A tutorial on using the GroundX APIs with ChatGPT",
-  "main": "demo.js",
+  "main": "demo.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "start": "node dist/demo.ts",
+    "dev":   "ts-node demo.ts"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/groundxai/code-samples.git"
   },
-  "type": "module",
   "author": "support@groundx.ai",
   "license": "MIT",
   "bugs": {
@@ -19,7 +20,12 @@
   "homepage": "https://github.com/groundxai/code-samples#readme",
   "dependencies": {
     "dotenv": "^16.3.1",
-    "groundx": "^2.1.0",
+    "groundx": "^2.3.5",
     "openai": "^4.12.1"
+  },
+  "devDependencies": {
+    "typescript": "^4.x.x",
+    "ts-node":    "^10.x.x",
+    "@types/node":"^18.x.x"
   }
 }
