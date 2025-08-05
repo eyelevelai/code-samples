@@ -1,0 +1,2 @@
+smolagents[openai]>=1.6.0
+groundx>=2.3.0
