@@ -8,6 +8,9 @@ from smolagents import Tool  # type: ignore[index]
 # from groundx import GroundXTool
 # gx = GroundXTool(api_key=GROUNDX_API_KEY, bucket_id=GROUNDX_BUCKET_ID)
 
+# if using on prem:
+# gx = GroundXTool(api_key=GROUNDX_API_KEY, bucket_id=GROUNDX_BUCKET_ID, base_url=GROUNDX_SERVICE_ADDRESS)
+
 
 class GroundXTool(Tool):
     name = "groundx_retriever"
@@ -39,11 +42,14 @@ class GroundXTool(Tool):
         self,
         api_key: str,  # GroundX API key
         bucket_id: int,  # GroundX bucket ID
+        base_url: typing.Optional[
+            str
+        ] = None,  # GroundX base URL, should be set in cases of on prem deployment
     ):
         super().__init__()  # type: ignore[index]
 
         self.bucket_id = bucket_id
-        self.client = GroundX(api_key=api_key)
+        self.client = GroundX(api_key=api_key, base_url=base_url)
 
     def forward(self, query: str, n: int = 50) -> str:  # type: ignore[index]
         assert isinstance(query, str), "Your search query must be a string"

@@ -6,8 +6,12 @@ from groundx import GroundX, SearchResponse
 
 
 # Example usage:
+
 # from groundx import GroundXTool
 # gx = GroundXTool(api_key=GROUNDX_API_KEY, bucket_id=GROUNDX_BUCKET_ID)
+
+# if using on prem:
+# gx = GroundXTool(api_key=GROUNDX_API_KEY, bucket_id=GROUNDX_BUCKET_ID, base_url=GROUNDX_SERVICE_ADDRESS)
 
 
 class GroundXToolInput(BaseModel):
@@ -42,11 +46,14 @@ class GroundXTool(BaseTool):
         self,
         api_key: str,  # GroundX API key
         bucket_id: int,  # GroundX bucket ID
+        base_url: typing.Optional[
+            str
+        ] = None,  # GroundX base URL, should be set in cases of on prem deployment
     ):
         super().__init__()  # type: ignore[index]
 
         self._bucket_id = bucket_id
-        self._client = GroundX(api_key=api_key)
+        self._client = GroundX(api_key=api_key, base_url=base_url)
 
     def _run(self, query: str, n: int = 50) -> str:
         print(f"query\n\t[{query}]")
